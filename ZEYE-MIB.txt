@@ -1,0 +1,188 @@
+ZEYE-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Zeye MIB objects
+--
+
+IMPORTS
+    MODULE-IDENTITY, enterprises, OBJECT-TYPE, Integer32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+;
+
+zeye MODULE-IDENTITY
+    LAST-UPDATED    "201604220000Z"
+    ORGANIZATION    "Zeye Solutions"
+    CONTACT-INFO    "info@zeye.ws"
+    DESCRIPTION     "Zeye SNMP Definition"
+
+    REVISION        "201604220000Z"
+    DESCRIPTION     "Zeye 0.2.0.0 MIB"
+
+    ::= { enterprises 47015 }
+
+
+Boolean ::= TEXTUAL-CONVENTION
+    STATUS              current
+    DESCRIPTION
+        "Represents a boolean value."
+    SYNTAX              INTEGER { true(1), false(2) }
+
+
+zeyeInfo                OBJECT IDENTIFIER ::= { zeye 2 }
+
+zeyeAgentVersion OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Zeye SNMP Agent version"
+    ::= { zeyeInfo 1 }
+
+zwave                   OBJECT IDENTIFIER ::= { zeye 3 }
+zwaveNodes              OBJECT IDENTIFIER ::= { zwave 1 }
+
+zwaveNodesCount OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave nodes count"
+    ::= { zwaveNodes 1 }
+
+zwaveNodesTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF ZwaveNodesEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave nodes table"
+    ::= { zwaveNodes 2 }
+
+zwaveNodesEntry OBJECT-TYPE
+    SYNTAX              ZwaveNodesEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+	   "Z-wave node entry"
+    INDEX   { zwaveNodeIndex }
+    ::= { zwaveNodesTable 1 }
+
+ZwaveNodesEntry ::= SEQUENCE {
+    zwaveNodeIndex      INTEGER(0..255),
+    zwaveNodeId         Integer32,
+    zwaveNodeName       DisplayString,
+    zwaveNodeLocation   DisplayString,
+    zwaveNodeBaud       Integer32,
+    zwaveNodeBattery    Integer32,
+    zwaveNodeAwaked     Boolean
+}
+
+zwaveNodeIndex OBJECT-TYPE
+    SYNTAX              INTEGER(0..255)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node index"
+    ::= { zwaveNodesEntry 1 }
+
+zwaveNodeId OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node Id"
+    ::= { zwaveNodesEntry 2 }
+
+zwaveNodeName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node name"
+    ::= { zwaveNodesEntry 3 }
+
+zwaveNodeLocation OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node location"
+    ::= { zwaveNodesEntry 4 }
+
+zwaveNodeBaud OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node baud"
+    ::= { zwaveNodesEntry 5 }
+
+zwaveNodeBattery OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node battery level"
+    ::= { zwaveNodesEntry 6 }
+
+zwaveNodeAwaked OBJECT-TYPE
+    SYNTAX              Boolean
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node awaked status"
+    ::= { zwaveNodesEntry 7 }
+
+---
+--- Object Groups, Conformance, Compilances
+---
+
+zeyeConformance         OBJECT IDENTIFIER ::= { zeye 1 }
+
+zeyeCompliances         OBJECT IDENTIFIER ::= { zeyeConformance 1 }
+zeyeGroups              OBJECT IDENTIFIER ::= { zeyeConformance 2 }
+
+zeyeCommonCompliances MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for Zeye common entities."
+    MODULE  -- this module
+        MANDATORY-GROUPS { commonObjectGroup }
+    ::= { zeyeCompliances 1 }
+
+zeyeZwaveCompliances MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for Zeye zwave entities."
+    MODULE  -- this module
+        MANDATORY-GROUPS { zwaveObjectGroup }
+    ::= { zeyeCompliances 2 }
+
+commonObjectGroup OBJECT-GROUP
+    OBJECTS {
+        zeyeAgentVersion
+    }
+    STATUS current
+    DESCRIPTION
+        "ZEYE-MIB common objects group"
+    ::= { zeyeGroups 1 }
+
+zwaveObjectGroup OBJECT-GROUP
+    OBJECTS {
+        zwaveNodesCount,
+        zwaveNodeId,
+        zwaveNodeName,
+        zwaveNodeLocation,
+        zwaveNodeBaud,
+        zwaveNodeBattery,
+        zwaveNodeAwaked
+    }
+    STATUS current
+    DESCRIPTION
+        "ZEYE-MIB z-wave objects group"
+    ::= { zeyeGroups 2 }
+
+END

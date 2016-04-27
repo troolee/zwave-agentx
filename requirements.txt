@@ -1,0 +1,2 @@
+git+https://github.com/rayed/pyagentx.git@python3
+docopt
