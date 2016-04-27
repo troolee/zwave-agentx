@@ -21,6 +21,8 @@ import datetime
 from docopt import docopt
 import logging
 import traceback
+from openzwave.network import ZWaveNetwork
+from openzwave.option import ZWaveOption
 
 
 VERSION = '0.2'
@@ -70,7 +72,7 @@ class ZeyeZwaveNodesUpdater(pyagentx.Updater):
             self.set_INTEGER(self._get_oid(i, 7), 2)                           # zwaveNodeAwaked
 
 
-def start_agent(device=None, config_path=None, debug=False, pyagentx_debug=False):
+def init_loggers(debug=False, pyagentx_debug=False):
     level = logging.DEBUG if pyagentx_debug else logging.INFO if debug else logging.WARNING
     pyagentx_logger = logging.getLogger('pyagentx')
     pyagentx_logger.setLevel(level)
@@ -79,19 +81,42 @@ def start_agent(device=None, config_path=None, debug=False, pyagentx_debug=False
     ch.setLevel(level)
     ch.setFormatter(formatter)
     pyagentx_logger.addHandler(ch)
+    return pyagentx_logger
+
+
+def init_zwave_network(device=None, config_path=None, debug=False):
+    options = ZWaveOption(device, config_path=config_path, user_path=".", cmd_line="")
+    options.set_log_file("OZW_Log.log")
+    options.set_append_log_file(False)
+    options.set_console_output(True)
+    options.set_save_log_level('Debug' if debug else 'Info')
+    options.set_logging(False)
+    options.lock()
+
+    zwave_network = ZWaveNetwork(options, autostart=False)
+    return zwave_network
+
+
+def start_agent(device=None, config_path=None, debug=False, pyagentx_debug=False):
+    init_loggers(debug, pyagentx_debug)
+
+    zwave_network = init_zwave_network(device, config_path, debug)
 
     while True:
         try:
+            zwave_network.start()
             agent = ZeyeAgent()
             agent.start()
         except KeyboardInterrupt:
             agent.stop()
+            zwave_network.stop()
             exit(0)
         except Exception:
             logger.error('Unhandled error:')
             logger.error(traceback.format_exc())
             try:
                 agent.stop()
+                zwave_network.stop()
             except Exception:
                 pass
             logger.debug('Restarting in 3 sec...')
