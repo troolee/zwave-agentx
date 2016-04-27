@@ -109,6 +109,6 @@ if __name__ == '__main__':
     if arguments['run']:
         start_agent(
             device=arguments['--device'],
-            config=arguments['--config'],
+            config_path=arguments['--config'],
             debug=arguments['--debug'] or arguments['--full-debug'],
             pyagentx_debug=arguments['--full-debug'])
