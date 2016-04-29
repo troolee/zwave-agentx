@@ -1,2 +1,3 @@
-git+https://github.com/rayed/pyagentx.git@python3
 docopt
+git+https://github.com/rayed/pyagentx.git
+git+https://github.com/11craft/louie.git
