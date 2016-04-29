@@ -14,9 +14,11 @@ Options:
     -d --debug          Show debug output.
     -D --full-debug     Show debug and pyagentx debug output.
 """
+from louie import dispatcher
 import pyagentx
 import subprocess
 import os
+import time
 import datetime
 from docopt import docopt
 import logging
@@ -31,6 +33,11 @@ BETA = True
 ROOT_OID = '1.3.6.1.4.1.47015'
 
 logger = logging.getLogger(__name__)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+# ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -43,6 +50,9 @@ if BETA:
 
 def get_oid(oid):
     return '{}.{}'.format(ROOT_OID, oid)
+
+
+zwave_nodes = None
 
 
 class ZeyeAgent(pyagentx.Agent):
@@ -61,15 +71,23 @@ class ZeyeZwaveNodesUpdater(pyagentx.Updater):
         return '2.1.{}.{}'.format(field_index, index)
 
     def update(self):
-        self.set_INTEGER('1.0', 3)  # zwaveNodesCount
-        for i in range(1, 4):
+        global zwave_nodes
+
+        if zwave_nodes is None:
+            return
+
+        self.set_INTEGER('1.0', len(zwave_nodes))  # zwaveNodesCount
+        for i in range(len(zwave_nodes)):
+            n = zwave_nodes[i]
             self.set_INTEGER(self._get_oid(i, 1), i)                           # zwaveNodeIndex
-            self.set_INTEGER(self._get_oid(i, 2), i)                           # zwaveNodeId
-            self.set_OCTETSTRING(self._get_oid(i, 3), 'Node {}'.format(i))     # zwaveNodeName
-            self.set_OCTETSTRING(self._get_oid(i, 4), '')                      # zwaveNodeLocation
-            self.set_INTEGER(self._get_oid(i, 5), 4000)                        # zwaveNodeBaud
-            self.set_INTEGER(self._get_oid(i, 6), 100)                         # zwaveNodeBattery
-            self.set_INTEGER(self._get_oid(i, 7), 2)                           # zwaveNodeAwaked
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveNodeId'])            # zwaveNodeId
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveNodeName'])      # zwaveNodeName
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveNodeLocation'])  # zwaveNodeLocation
+            self.set_INTEGER(self._get_oid(i, 5), n['zwaveNodeBaud'])          # zwaveNodeBaud
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveNodeBattery'])       # zwaveNodeBattery
+            self.set_INTEGER(self._get_oid(i, 7), n['zwaveNodeAwaked'])        # zwaveNodeAwaked
+            self.set_OCTETSTRING(self._get_oid(i, 8), n['zwaveNodeType'])      # zwaveNodeAwaked
+            self.set_OCTETSTRING(self._get_oid(i, 9), n['zwaveNodeTypeName'])  # zwaveNodeAwaked
 
 
 def init_loggers(debug=False, pyagentx_debug=False):
@@ -84,16 +102,66 @@ def init_loggers(debug=False, pyagentx_debug=False):
     return pyagentx_logger
 
 
+def zwave_network_started(network):
+    print("Z-wave network started: HomeId {:08x}".format(network.home_id))
+
+
+def zwave_network_failed(network):
+    print('Z-wave network FAILED.')
+
+
+def zwave_read_nodes(network):
+    global zwave_nodes
+    nodes = sorted(network.nodes.values(), key=lambda x: x.node_id)
+    zwave_nodes = [{
+        'zwaveNodeId': n.node_id,
+        'zwaveNodeName': n.product_name,
+        'zwaveNodeLocation': n.location,
+        'zwaveNodeBaud': n.max_baud_rate,
+        'zwaveNodeBattery': n.get_battery_level() if n.get_battery_level() is not None else -1,
+        'zwaveNodeAwaked': n.is_awake,
+        'zwaveNodeType': n.product_type,
+        'zwaveNodeTypeName': n.type,
+    } for n in nodes]
+    from pprint import pprint
+    pprint(zwave_nodes)
+
+
+def zwave_network_ready(network):
+    print("Z-wave network ready: HomeId {:08x}, {} nodes found.".format(network.home_id, network.nodes_count))
+    dispatcher.connect(zwave_value_update, ZWaveNetwork.SIGNAL_VALUE)
+    dispatcher.connect(zwave_read_nodes, ZWaveNetwork.SIGNAL_NODE_ADDED)
+    dispatcher.connect(zwave_read_nodes, ZWaveNetwork.SIGNAL_NODE_EVENT)
+    dispatcher.connect(zwave_read_nodes, ZWaveNetwork.SIGNAL_NODE_REMOVED)
+    zwave_read_nodes(network)
+
+
+def zwave_value_update(network, node, value):
+    print("Z-wave Value Update: Node: {} Value: {}.".format(node, value))
+    # print(dir(node))
+    # print(dir(value))
+    # import pprint
+    # pprint.pprint(node.to_dict())
+    # pprint.pprint(value.to_dict())
+    # print('{:08x}'.format(value.command_class))
+
+
 def init_zwave_network(device=None, config_path=None, debug=False):
     options = ZWaveOption(device, config_path=config_path, user_path=".", cmd_line="")
     options.set_log_file("OZW_Log.log")
     options.set_append_log_file(False)
-    options.set_console_output(True)
-    options.set_save_log_level('Debug' if debug else 'Info')
-    options.set_logging(False)
+    options.set_console_output(False)
+    options.set_save_log_level('Info')  # ('Info' if debug else 'Warning')
+    options.set_logging(True)
     options.lock()
 
     zwave_network = ZWaveNetwork(options, autostart=False)
+
+    # We connect to the louie dispatcher
+    dispatcher.connect(zwave_network_started, ZWaveNetwork.SIGNAL_NETWORK_STARTED)
+    dispatcher.connect(zwave_network_failed, ZWaveNetwork.SIGNAL_NETWORK_FAILED)
+    dispatcher.connect(zwave_network_ready, ZWaveNetwork.SIGNAL_NETWORK_READY)
+
     return zwave_network
 
 
@@ -120,7 +188,6 @@ def start_agent(device=None, config_path=None, debug=False, pyagentx_debug=False
             except Exception:
                 pass
             logger.debug('Restarting in 3 sec...')
-            import time
             time.sleep(3)
 
 
