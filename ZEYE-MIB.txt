@@ -77,7 +77,9 @@ ZwaveNodesEntry ::= SEQUENCE {
     zwaveNodeLocation   DisplayString,
     zwaveNodeBaud       Integer32,
     zwaveNodeBattery    Integer32,
-    zwaveNodeAwaked     Boolean
+    zwaveNodeAwaked     Boolean,
+    zwaveNodeType       DisplayString,
+    zwaveNodeTypeName   DisplayString
 }
 
 zwaveNodeIndex OBJECT-TYPE
@@ -136,6 +138,22 @@ zwaveNodeAwaked OBJECT-TYPE
         "Z-wave node awaked status"
     ::= { zwaveNodesEntry 7 }
 
+zwaveNodeType OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node type"
+    ::= { zwaveNodesEntry 8 }
+
+zwaveNodeTypeName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave node type name"
+    ::= { zwaveNodesEntry 9 }
+
 ---
 --- Object Groups, Conformance, Compilances
 ---
@@ -178,7 +196,9 @@ zwaveObjectGroup OBJECT-GROUP
         zwaveNodeLocation,
         zwaveNodeBaud,
         zwaveNodeBattery,
-        zwaveNodeAwaked
+        zwaveNodeAwaked,
+        zwaveNodeType,
+        zwaveNodeTypeName
     }
     STATUS current
     DESCRIPTION
