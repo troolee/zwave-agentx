@@ -32,6 +32,14 @@ Boolean ::= TEXTUAL-CONVENTION
     SYNTAX              INTEGER { true(1), false(2) }
 
 
+Numeric2 ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT        "d-2"
+    STATUS              current
+    DESCRIPTION
+        "Represents a numeric with 2 decimals value."
+    SYNTAX              INTEGER(-2147483648..2147483648)
+
+
 zeyeInfo                OBJECT IDENTIFIER ::= { zeye 2 }
 
 zeyeAgentVersion OBJECT-TYPE
@@ -44,6 +52,8 @@ zeyeAgentVersion OBJECT-TYPE
 
 zwave                   OBJECT IDENTIFIER ::= { zeye 3 }
 zwaveNodes              OBJECT IDENTIFIER ::= { zwave 1 }
+zwaveSensors            OBJECT IDENTIFIER ::= { zwave 2 }
+zwaveTemperatureSensors OBJECT IDENTIFIER ::= { zwaveSensors 1 }
 
 zwaveNodesCount OBJECT-TYPE
     SYNTAX              Integer32
@@ -154,6 +164,90 @@ zwaveNodeTypeName OBJECT-TYPE
         "Z-wave node type name"
     ::= { zwaveNodesEntry 9 }
 
+--- Temperature Sensors
+
+zwaveTemperatureSensorsCount OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensors count"
+    ::= { zwaveTemperatureSensors 1 }
+
+zwaveTemperatureSensorsTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF ZwaveTemperatureSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensors table"
+    ::= { zwaveTemperatureSensors 2 }
+
+zwaveTemperatureSensorsEntry OBJECT-TYPE
+    SYNTAX              ZwaveTemperatureSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+	   "Z-wave temperature sensots entry"
+    INDEX   { zwaveTemperatureSensorIndex }
+    ::= { zwaveTemperatureSensorsTable 1 }
+
+ZwaveTemperatureSensorsEntry ::= SEQUENCE {
+    zwaveTemperatureSensorIndex     INTEGER(0..255),
+    zwaveTemperatureSensorNodeId    Integer32,
+    zwaveTemperatureSensorId        DisplayString,
+    zwaveTemperatureSensorName      DisplayString,
+    zwaveTemperatureSensorLocation  DisplayString,
+    zwaveemperatureSensorValue      Numeric2
+}
+
+zwaveTemperatureSensorIndex OBJECT-TYPE
+    SYNTAX              INTEGER(0..255)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor index"
+    ::= { zwaveTemperatureSensorsEntry 1 }
+
+zwaveTemperatureSensorNodeId OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor node id"
+    ::= { zwaveTemperatureSensorsEntry 2 }
+
+zwaveTemperatureSensorId OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor id"
+    ::= { zwaveTemperatureSensorsEntry 3 }
+
+zwaveTemperatureSensorName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor name"
+    ::= { zwaveTemperatureSensorsEntry 4 }
+
+zwaveTemperatureSensorLocation OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor location"
+    ::= { zwaveTemperatureSensorsEntry 5 }
+
+zwaveemperatureSensorValue OBJECT-TYPE
+    SYNTAX              Numeric2
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave temperature sensor value (C)"
+    ::= { zwaveTemperatureSensorsEntry 6 }
+
 ---
 --- Object Groups, Conformance, Compilances
 ---
@@ -198,7 +292,13 @@ zwaveObjectGroup OBJECT-GROUP
         zwaveNodeBattery,
         zwaveNodeAwaked,
         zwaveNodeType,
-        zwaveNodeTypeName
+        zwaveNodeTypeName,
+        zwaveTemperatureSensorsCount,
+        zwaveTemperatureSensorNodeId,
+        zwaveTemperatureSensorId,
+        zwaveTemperatureSensorName,
+        zwaveTemperatureSensorLocation,
+        zwaveemperatureSensorValue
     }
     STATUS current
     DESCRIPTION
