@@ -197,7 +197,7 @@ ZwaveTemperatureSensorsEntry ::= SEQUENCE {
     zwaveTemperatureSensorId        DisplayString,
     zwaveTemperatureSensorName      DisplayString,
     zwaveTemperatureSensorLocation  DisplayString,
-    zwaveemperatureSensorValue      Numeric2
+    zwaveTemperatureSensorValue     Numeric2
 }
 
 zwaveTemperatureSensorIndex OBJECT-TYPE
@@ -240,7 +240,7 @@ zwaveTemperatureSensorLocation OBJECT-TYPE
         "Z-wave temperature sensor location"
     ::= { zwaveTemperatureSensorsEntry 5 }
 
-zwaveemperatureSensorValue OBJECT-TYPE
+zwaveTemperatureSensorValue OBJECT-TYPE
     SYNTAX              Numeric2
     MAX-ACCESS          read-write
     STATUS              current
@@ -298,7 +298,7 @@ zwaveObjectGroup OBJECT-GROUP
         zwaveTemperatureSensorId,
         zwaveTemperatureSensorName,
         zwaveTemperatureSensorLocation,
-        zwaveemperatureSensorValue
+        zwaveTemperatureSensorValue
     }
     STATUS current
     DESCRIPTION
