@@ -25,6 +25,8 @@ import logging
 import traceback
 from openzwave.network import ZWaveNetwork
 from openzwave.option import ZWaveOption
+from pprint import pprint
+import re
 
 
 VERSION = '0.2'
@@ -53,12 +55,16 @@ def get_oid(oid):
 
 
 zwave_nodes = None
+zwave_sensors = {
+    'temperature': {},
+}
 
 
 class ZeyeAgent(pyagentx.Agent):
     def setup(self):
         self.register(get_oid('2'), ZeyeInfoUpdater)
         self.register(get_oid('3.1'), ZeyeZwaveNodesUpdater)
+        self.register(get_oid('3.2.1'), ZeyeZwaveTemperatureSensorsUpdater)
 
 
 class ZeyeInfoUpdater(pyagentx.Updater):
@@ -76,18 +82,42 @@ class ZeyeZwaveNodesUpdater(pyagentx.Updater):
         if zwave_nodes is None:
             return
 
-        self.set_INTEGER('1.0', len(zwave_nodes))  # zwaveNodesCount
+        self.set_INTEGER('1.0', len(zwave_nodes))
         for i in range(len(zwave_nodes)):
             n = zwave_nodes[i]
-            self.set_INTEGER(self._get_oid(i, 1), i)                           # zwaveNodeIndex
-            self.set_INTEGER(self._get_oid(i, 2), n['zwaveNodeId'])            # zwaveNodeId
-            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveNodeName'])      # zwaveNodeName
-            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveNodeLocation'])  # zwaveNodeLocation
-            self.set_INTEGER(self._get_oid(i, 5), n['zwaveNodeBaud'])          # zwaveNodeBaud
-            self.set_INTEGER(self._get_oid(i, 6), n['zwaveNodeBattery'])       # zwaveNodeBattery
-            self.set_INTEGER(self._get_oid(i, 7), n['zwaveNodeAwaked'])        # zwaveNodeAwaked
-            self.set_OCTETSTRING(self._get_oid(i, 8), n['zwaveNodeType'])      # zwaveNodeAwaked
-            self.set_OCTETSTRING(self._get_oid(i, 9), n['zwaveNodeTypeName'])  # zwaveNodeAwaked
+            self.set_INTEGER(self._get_oid(i, 1), i)
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveNodeId'])
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveNodeName'])
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveNodeLocation'])
+            self.set_INTEGER(self._get_oid(i, 5), n['zwaveNodeBaud'])
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveNodeBattery'])
+            self.set_INTEGER(self._get_oid(i, 7), n['zwaveNodeAwaked'])
+            self.set_OCTETSTRING(self._get_oid(i, 8), n['zwaveNodeType'])
+            self.set_OCTETSTRING(self._get_oid(i, 9), n['zwaveNodeTypeName'])
+
+
+class ZeyeZwaveTemperatureSensorsUpdater(pyagentx.Updater):
+    def _get_oid(self, index, field_index):
+        return '2.1.{}.{}'.format(field_index, index)
+
+    def update(self):
+        global zwave_sensors
+
+        if not zwave_sensors.get('temperature'):
+            return
+
+        sensors = sorted(zwave_sensors['temperature'].values(),
+                         key=lambda x: x['zwaveTemperatureSensorNodeId'] * 10 + x['_sensorIndex'])
+
+        self.set_INTEGER('1.0', len(sensors))
+        for i in range(len(sensors)):
+            n = sensors[i]
+            self.set_INTEGER(self._get_oid(i, 1), i)
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveTemperatureSensorNodeId'])
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveTemperatureSensorId'])
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveTemperatureSensorName'])
+            self.set_OCTETSTRING(self._get_oid(i, 5), n['zwaveTemperatureSensorLocation'])
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveTemperatureSensorValue'])
 
 
 def init_loggers(debug=False, pyagentx_debug=False):
@@ -123,8 +153,30 @@ def zwave_read_nodes(network):
         'zwaveNodeType': n.product_type,
         'zwaveNodeTypeName': n.type,
     } for n in nodes]
-    from pprint import pprint
-    pprint(zwave_nodes)
+    for node in nodes:
+        zwave_read_values(network, node, node.values.values())
+
+
+def zwave_read_values(network, node, values):
+    for value in values:
+        if value.genre != 'User':
+            continue
+
+        if re.search('Temperature', value.label, re.I):
+            v = value.data
+            if value.units == 'F':
+                v = (v - 32) * 5 / 9
+            v = int(100 * v)
+            zwave_sensors['temperature'][value.value_id] = {
+                'zwaveTemperatureSensorNodeId': node.node_id,
+                'zwaveTemperatureSensorId': str(value.value_id),
+                'zwaveTemperatureSensorName': value.label,
+                'zwaveTemperatureSensorLocation': node.location,
+                'zwaveTemperatureSensorValue': v,
+                '_sensorIndex': value.index,
+            }
+        else:
+            print(value)
 
 
 def zwave_network_ready(network):
@@ -138,12 +190,7 @@ def zwave_network_ready(network):
 
 def zwave_value_update(network, node, value):
     print("Z-wave Value Update: Node: {} Value: {}.".format(node, value))
-    # print(dir(node))
-    # print(dir(value))
-    # import pprint
-    # pprint.pprint(node.to_dict())
-    # pprint.pprint(value.to_dict())
-    # print('{:08x}'.format(value.command_class))
+    zwave_read_values(network, node, [value])
 
 
 def init_zwave_network(device=None, config_path=None, debug=False):
