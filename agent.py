@@ -57,6 +57,7 @@ def get_oid(oid):
 zwave_nodes = None
 zwave_sensors = {
     'temperature': {},
+    'ultraviolet': {},
 }
 
 
@@ -65,6 +66,7 @@ class ZeyeAgent(pyagentx.Agent):
         self.register(get_oid('2'), ZeyeInfoUpdater)
         self.register(get_oid('3.1'), ZeyeZwaveNodesUpdater)
         self.register(get_oid('3.2.1'), ZeyeZwaveTemperatureSensorsUpdater)
+        self.register(get_oid('3.2.2'), ZeyeZwaveUltravioletSensorsUpdater)
 
 
 class ZeyeInfoUpdater(pyagentx.Updater):
@@ -120,6 +122,30 @@ class ZeyeZwaveTemperatureSensorsUpdater(pyagentx.Updater):
             self.set_INTEGER(self._get_oid(i, 6), n['zwaveTemperatureSensorValue'])
 
 
+class ZeyeZwaveUltravioletSensorsUpdater(pyagentx.Updater):
+    def _get_oid(self, index, field_index):
+        return '2.2.{}.{}'.format(field_index, index)
+
+    def update(self):
+        global zwave_sensors
+
+        if not zwave_sensors.get('ultraviolet'):
+            return
+
+        sensors = sorted(zwave_sensors['ultraviolet'].values(),
+                         key=lambda x: x['zwaveUltravioletSensorNodeId'] * 10 + x['_sensorIndex'])
+
+        self.set_INTEGER('1.0', len(sensors))
+        for i in range(len(sensors)):
+            n = sensors[i]
+            self.set_INTEGER(self._get_oid(i, 1), i)
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveUltravioletSensorNodeId'])
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveUltravioletSensorId'])
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveUltravioletSensorName'])
+            self.set_OCTETSTRING(self._get_oid(i, 5), n['zwaveUltravioletSensorLocation'])
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveUltravioletSensorValue'])
+
+
 def init_loggers(debug=False, pyagentx_debug=False):
     level = logging.DEBUG if pyagentx_debug else logging.INFO if debug else logging.WARNING
     pyagentx_logger = logging.getLogger('pyagentx')
@@ -173,6 +199,16 @@ def zwave_read_values(network, node, values):
                 'zwaveTemperatureSensorName': value.label,
                 'zwaveTemperatureSensorLocation': node.location,
                 'zwaveTemperatureSensorValue': v,
+                '_sensorIndex': value.index,
+            }
+        elif re.search('Ultraviolet', value.label, re.I):
+            v = value.data
+            zwave_sensors['ultraviolet'][value.value_id] = {
+                'zwaveUltravioletSensorNodeId': node.node_id,
+                'zwaveUltravioletSensorId': str(value.value_id),
+                'zwaveUltravioletSensorName': value.label,
+                'zwaveUltravioletSensorLocation': node.location,
+                'zwaveUltravioletSensorValue': v,
                 '_sensorIndex': value.index,
             }
         else:

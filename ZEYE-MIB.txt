@@ -54,6 +54,7 @@ zwave                   OBJECT IDENTIFIER ::= { zeye 3 }
 zwaveNodes              OBJECT IDENTIFIER ::= { zwave 1 }
 zwaveSensors            OBJECT IDENTIFIER ::= { zwave 2 }
 zwaveTemperatureSensors OBJECT IDENTIFIER ::= { zwaveSensors 1 }
+zwaveUltravioletSensors OBJECT IDENTIFIER ::= { zwaveSensors 2 }
 
 zwaveNodesCount OBJECT-TYPE
     SYNTAX              Integer32
@@ -247,6 +248,91 @@ zwaveTemperatureSensorValue OBJECT-TYPE
     DESCRIPTION
         "Z-wave temperature sensor value (C)"
     ::= { zwaveTemperatureSensorsEntry 6 }
+
+
+--- Ultraviolet Sensors
+
+zwaveUltravioletSensorsCount OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensors count"
+    ::= { zwaveUltravioletSensors 1 }
+
+zwaveUltravioletSensorsTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF ZwaveUltravioletSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensors table"
+    ::= { zwaveUltravioletSensors 2 }
+
+zwaveUltravioletSensorsEntry OBJECT-TYPE
+    SYNTAX              ZwaveUltravioletSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+	   "Z-wave ultraviolet sensots entry"
+    INDEX   { zwaveUltravioletSensorIndex }
+    ::= { zwaveUltravioletSensorsTable 1 }
+
+ZwaveUltravioletSensorsEntry ::= SEQUENCE {
+    zwaveUltravioletSensorIndex     INTEGER(0..255),
+    zwaveUltravioletSensorNodeId    Integer32,
+    zwaveUltravioletSensorId        DisplayString,
+    zwaveUltravioletSensorName      DisplayString,
+    zwaveUltravioletSensorLocation  DisplayString,
+    zwaveUltravioletSensorValue     Numeric2
+}
+
+zwaveUltravioletSensorIndex OBJECT-TYPE
+    SYNTAX              INTEGER(0..255)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor index"
+    ::= { zwaveUltravioletSensorsEntry 1 }
+
+zwaveUltravioletSensorNodeId OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor node id"
+    ::= { zwaveUltravioletSensorsEntry 2 }
+
+zwaveUltravioletSensorId OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor id"
+    ::= { zwaveUltravioletSensorsEntry 3 }
+
+zwaveUltravioletSensorName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor name"
+    ::= { zwaveUltravioletSensorsEntry 4 }
+
+zwaveUltravioletSensorLocation OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor location"
+    ::= { zwaveUltravioletSensorsEntry 5 }
+
+zwaveUltravioletSensorValue OBJECT-TYPE
+    SYNTAX              Numeric2
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave ultraviolet sensor value (C)"
+    ::= { zwaveUltravioletSensorsEntry 6 }
 
 ---
 --- Object Groups, Conformance, Compilances
