@@ -124,7 +124,7 @@ class ZeyeZwaveTemperatureSensorsUpdater(pyagentx.Updater):
 
 class ZeyeZwaveUltravioletSensorsUpdater(pyagentx.Updater):
     def _get_oid(self, index, field_index):
-        return '2.2.{}.{}'.format(field_index, index)
+        return '2.1.{}.{}'.format(field_index, index)
 
     def update(self):
         global zwave_sensors
