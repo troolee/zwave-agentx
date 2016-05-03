@@ -58,6 +58,8 @@ zwave_nodes = None
 zwave_sensors = {
     'temperature': {},
     'ultraviolet': {},
+    'luminance': {},
+    'humidity': {},
 }
 
 
@@ -67,6 +69,8 @@ class ZeyeAgent(pyagentx.Agent):
         self.register(get_oid('3.1'), ZeyeZwaveNodesUpdater)
         self.register(get_oid('3.2.1'), ZeyeZwaveTemperatureSensorsUpdater)
         self.register(get_oid('3.2.2'), ZeyeZwaveUltravioletSensorsUpdater)
+        self.register(get_oid('3.2.3'), ZeyeZwaveLuminanceSensorsUpdater)
+        self.register(get_oid('3.2.4'), ZeyeZwaveHumiditySensorsUpdater)
 
 
 class ZeyeInfoUpdater(pyagentx.Updater):
@@ -146,6 +150,54 @@ class ZeyeZwaveUltravioletSensorsUpdater(pyagentx.Updater):
             self.set_INTEGER(self._get_oid(i, 6), n['zwaveUltravioletSensorValue'])
 
 
+class ZeyeZwaveLuminanceSensorsUpdater(pyagentx.Updater):
+    def _get_oid(self, index, field_index):
+        return '2.1.{}.{}'.format(field_index, index)
+
+    def update(self):
+        global zwave_sensors
+
+        if not zwave_sensors.get('luminance'):
+            return
+
+        sensors = sorted(zwave_sensors['luminance'].values(),
+                         key=lambda x: x['zwaveLuminanceSensorNodeId'] * 10 + x['_sensorIndex'])
+
+        self.set_INTEGER('1.0', len(sensors))
+        for i in range(len(sensors)):
+            n = sensors[i]
+            self.set_INTEGER(self._get_oid(i, 1), i)
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveLuminanceSensorNodeId'])
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveLuminanceSensorId'])
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveLuminanceSensorName'])
+            self.set_OCTETSTRING(self._get_oid(i, 5), n['zwaveLuminanceSensorLocation'])
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveLuminanceSensorValue'])
+
+
+class ZeyeZwaveHumiditySensorsUpdater(pyagentx.Updater):
+    def _get_oid(self, index, field_index):
+        return '2.1.{}.{}'.format(field_index, index)
+
+    def update(self):
+        global zwave_sensors
+
+        if not zwave_sensors.get('humidity'):
+            return
+
+        sensors = sorted(zwave_sensors['humidity'].values(),
+                         key=lambda x: x['zwaveHumiditySensorNodeId'] * 10 + x['_sensorIndex'])
+
+        self.set_INTEGER('1.0', len(sensors))
+        for i in range(len(sensors)):
+            n = sensors[i]
+            self.set_INTEGER(self._get_oid(i, 1), i)
+            self.set_INTEGER(self._get_oid(i, 2), n['zwaveHumiditySensorNodeId'])
+            self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveHumiditySensorId'])
+            self.set_OCTETSTRING(self._get_oid(i, 4), n['zwaveHumiditySensorName'])
+            self.set_OCTETSTRING(self._get_oid(i, 5), n['zwaveHumiditySensorLocation'])
+            self.set_INTEGER(self._get_oid(i, 6), n['zwaveHumiditySensorValue'])
+
+
 def init_loggers(debug=False, pyagentx_debug=False):
     level = logging.DEBUG if pyagentx_debug else logging.INFO if debug else logging.WARNING
     pyagentx_logger = logging.getLogger('pyagentx')
@@ -203,6 +255,7 @@ def zwave_read_values(network, node, values):
             }
         elif re.search('Ultraviolet', value.label, re.I):
             v = value.data
+            v = int(100 * v)
             zwave_sensors['ultraviolet'][value.value_id] = {
                 'zwaveUltravioletSensorNodeId': node.node_id,
                 'zwaveUltravioletSensorId': str(value.value_id),
@@ -211,8 +264,29 @@ def zwave_read_values(network, node, values):
                 'zwaveUltravioletSensorValue': v,
                 '_sensorIndex': value.index,
             }
-        else:
-            print(value)
+        elif re.search('Luminance', value.label, re.I):
+            v = value.data
+            v = int(100 * v)
+            zwave_sensors['luminance'][value.value_id] = {
+                'zwaveLuminanceSensorNodeId': node.node_id,
+                'zwaveLuminanceSensorId': str(value.value_id),
+                'zwaveLuminanceSensorName': value.label,
+                'zwaveLuminanceSensorLocation': node.location,
+                'zwaveLuminanceSensorValue': v,
+                '_sensorIndex': value.index,
+            }
+        elif re.search('Humidity', value.label, re.I):
+            v = value.data
+            v = int(100 * v)
+            zwave_sensors['humidity'][value.value_id] = {
+                'zwaveHumiditySensorNodeId': node.node_id,
+                'zwaveHumiditySensorId': str(value.value_id),
+                'zwaveHumiditySensorName': value.label,
+                'zwaveHumiditySensorLocation': node.location,
+                'zwaveHumiditySensorValue': v,
+                '_sensorIndex': value.index,
+            }
+        print(value)
 
 
 def zwave_network_ready(network):
