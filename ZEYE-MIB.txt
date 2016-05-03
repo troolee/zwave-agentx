@@ -56,6 +56,7 @@ zwaveSensors            OBJECT IDENTIFIER ::= { zwave 2 }
 zwaveTemperatureSensors OBJECT IDENTIFIER ::= { zwaveSensors 1 }
 zwaveUltravioletSensors OBJECT IDENTIFIER ::= { zwaveSensors 2 }
 zwaveLuminanceSensors   OBJECT IDENTIFIER ::= { zwaveSensors 3 }
+zwaveHumiditySensors    OBJECT IDENTIFIER ::= { zwaveSensors 4 }
 
 zwaveNodesCount OBJECT-TYPE
     SYNTAX              Integer32
@@ -417,6 +418,90 @@ zwaveLuminanceSensorValue OBJECT-TYPE
     DESCRIPTION
         "Z-wave luminance sensor value"
     ::= { zwaveLuminanceSensorsEntry 6 }
+
+--- Humidity Sensors
+
+zwaveHumiditySensorsCount OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensors count"
+    ::= { zwaveHumiditySensors 1 }
+
+zwaveHumiditySensorsTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF ZwaveHumiditySensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensors table"
+    ::= { zwaveHumiditySensors 2 }
+
+zwaveHumiditySensorsEntry OBJECT-TYPE
+    SYNTAX              ZwaveHumiditySensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+	   "Z-wave humidity sensots entry"
+    INDEX   { zwaveHumiditySensorIndex }
+    ::= { zwaveHumiditySensorsTable 1 }
+
+ZwaveHumiditySensorsEntry ::= SEQUENCE {
+    zwaveHumiditySensorIndex     INTEGER(0..255),
+    zwaveHumiditySensorNodeId    Integer32,
+    zwaveHumiditySensorId        DisplayString,
+    zwaveHumiditySensorName      DisplayString,
+    zwaveHumiditySensorLocation  DisplayString,
+    zwaveHumiditySensorValue     Numeric2
+}
+
+zwaveHumiditySensorIndex OBJECT-TYPE
+    SYNTAX              INTEGER(0..255)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor index"
+    ::= { zwaveHumiditySensorsEntry 1 }
+
+zwaveHumiditySensorNodeId OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor node id"
+    ::= { zwaveHumiditySensorsEntry 2 }
+
+zwaveHumiditySensorId OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor id"
+    ::= { zwaveHumiditySensorsEntry 3 }
+
+zwaveHumiditySensorName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor name"
+    ::= { zwaveHumiditySensorsEntry 4 }
+
+zwaveHumiditySensorLocation OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor location"
+    ::= { zwaveHumiditySensorsEntry 5 }
+
+zwaveHumiditySensorValue OBJECT-TYPE
+    SYNTAX              Numeric2
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave humidity sensor value"
+    ::= { zwaveHumiditySensorsEntry 6 }
 
 ---
 --- Object Groups, Conformance, Compilances
