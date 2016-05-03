@@ -55,6 +55,7 @@ zwaveNodes              OBJECT IDENTIFIER ::= { zwave 1 }
 zwaveSensors            OBJECT IDENTIFIER ::= { zwave 2 }
 zwaveTemperatureSensors OBJECT IDENTIFIER ::= { zwaveSensors 1 }
 zwaveUltravioletSensors OBJECT IDENTIFIER ::= { zwaveSensors 2 }
+zwaveLuminanceSensors   OBJECT IDENTIFIER ::= { zwaveSensors 3 }
 
 zwaveNodesCount OBJECT-TYPE
     SYNTAX              Integer32
@@ -249,7 +250,6 @@ zwaveTemperatureSensorValue OBJECT-TYPE
         "Z-wave temperature sensor value (C)"
     ::= { zwaveTemperatureSensorsEntry 6 }
 
-
 --- Ultraviolet Sensors
 
 zwaveUltravioletSensorsCount OBJECT-TYPE
@@ -331,8 +331,92 @@ zwaveUltravioletSensorValue OBJECT-TYPE
     MAX-ACCESS          read-write
     STATUS              current
     DESCRIPTION
-        "Z-wave ultraviolet sensor value (C)"
+        "Z-wave ultraviolet sensor value"
     ::= { zwaveUltravioletSensorsEntry 6 }
+
+--- Luminance Sensors
+
+zwaveLuminanceSensorsCount OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensors count"
+    ::= { zwaveLuminanceSensors 1 }
+
+zwaveLuminanceSensorsTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF ZwaveLuminanceSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensors table"
+    ::= { zwaveLuminanceSensors 2 }
+
+zwaveLuminanceSensorsEntry OBJECT-TYPE
+    SYNTAX              ZwaveLuminanceSensorsEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+	   "Z-wave luminance sensots entry"
+    INDEX   { zwaveLuminanceSensorIndex }
+    ::= { zwaveLuminanceSensorsTable 1 }
+
+ZwaveLuminanceSensorsEntry ::= SEQUENCE {
+    zwaveLuminanceSensorIndex     INTEGER(0..255),
+    zwaveLuminanceSensorNodeId    Integer32,
+    zwaveLuminanceSensorId        DisplayString,
+    zwaveLuminanceSensorName      DisplayString,
+    zwaveLuminanceSensorLocation  DisplayString,
+    zwaveLuminanceSensorValue     Numeric2
+}
+
+zwaveLuminanceSensorIndex OBJECT-TYPE
+    SYNTAX              INTEGER(0..255)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor index"
+    ::= { zwaveLuminanceSensorsEntry 1 }
+
+zwaveLuminanceSensorNodeId OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor node id"
+    ::= { zwaveLuminanceSensorsEntry 2 }
+
+zwaveLuminanceSensorId OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor id"
+    ::= { zwaveLuminanceSensorsEntry 3 }
+
+zwaveLuminanceSensorName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor name"
+    ::= { zwaveLuminanceSensorsEntry 4 }
+
+zwaveLuminanceSensorLocation OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor location"
+    ::= { zwaveLuminanceSensorsEntry 5 }
+
+zwaveLuminanceSensorValue OBJECT-TYPE
+    SYNTAX              Numeric2
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Z-wave luminance sensor value"
+    ::= { zwaveLuminanceSensorsEntry 6 }
 
 ---
 --- Object Groups, Conformance, Compilances
