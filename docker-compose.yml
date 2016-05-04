@@ -7,6 +7,7 @@ services:
         volumes:
             - ./data:/data
             - ./agent.py:/agent.py
+            - /var/agentx/master:/var/agentx/master
         devices:
             - "/dev/ttyAMA0:/dev/ttyAMA0"
         stop_signal: SIGINT
