@@ -2,7 +2,7 @@
 """Zeye Agent
 
 Usage:
-    agent.py [-dD] run [--device=<device>] [--config=<config>] [--user_path=<user_path>] [--daemon]
+    agent.py run [-dD] [--device=<device>] [--config=<config>] [--user_path=<user_path>] [--daemon]
         [--logfile=<logfile>]
     agent.py (-h | --help)
     agent.py (-v | --version)
