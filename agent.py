@@ -2,17 +2,21 @@
 """Zeye Agent
 
 Usage:
-    agent.py [-dD] run [--device=<device>] [--config=<config>]
+    agent.py [-dD] run [--device=<device>] [--config=<config>] [--user_path=<user_path>] [--daemon]
+        [--logfile=<logfile>]
     agent.py (-h | --help)
     agent.py (-v | --version)
 
 Options:
-    -h --help           Show this screen.
-    -v --version        Show version.
-    --device=<device>   SNMP controller device [default: /dev/ttyUSB0].
-    --config=<config>   OpenZWave config path [default: ./config]
-    -d --debug          Show debug output.
-    -D --full-debug     Show debug and pyagentx debug output.
+    -h --help                   Show this screen.
+    -v --version                Show version.
+    --device=<device>           SNMP controller device [default: /dev/ttyUSB0].
+    --config=<config>           OpenZWave config path [default: ./config]
+    -d --debug                  Show debug output.
+    -D --full-debug             Show debug and pyagentx debug output.
+    --daemon                    Run agent in daemon mode.
+    --logfile=<logfile>         Logfile path [default: '/var/log/zeye/agent.log'].
+    --user_path=<user_path>     Path to user config [default: '.'].
 """
 from louie import dispatcher
 import pyagentx
@@ -303,9 +307,9 @@ def zwave_value_update(network, node, value):
     zwave_read_values(network, node, [value])
 
 
-def init_zwave_network(device=None, config_path=None, debug=False):
-    options = ZWaveOption(device, config_path=config_path, user_path=".", cmd_line="")
-    options.set_log_file("OZW_Log.log")
+def init_zwave_network(device=None, config_path=None, user_path=None, debug=False):
+    options = ZWaveOption(device, config_path=config_path, user_path=user_path, cmd_line="")
+    options.set_log_file(os.path.join(user_path, "OZW_Log.log"))
     options.set_append_log_file(False)
     options.set_console_output(False)
     options.set_save_log_level('Info')  # ('Info' if debug else 'Warning')
@@ -322,10 +326,10 @@ def init_zwave_network(device=None, config_path=None, debug=False):
     return zwave_network
 
 
-def start_agent(device=None, config_path=None, debug=False, pyagentx_debug=False):
+def start_agent(device=None, config_path=None, user_path=None, debug=False, pyagentx_debug=False):
     init_loggers(debug, pyagentx_debug)
 
-    zwave_network = init_zwave_network(device, config_path, debug)
+    zwave_network = init_zwave_network(device, config_path, user_path, debug)
 
     while True:
         try:
@@ -356,8 +360,15 @@ if __name__ == '__main__':
         exit(0)
 
     if arguments['run']:
+        if arguments['--daemon']:
+            from daemon import pidfile, DaemonContext
+            pid = pidfile.TimeoutPIDLockFile('/var/run/zeyeagent.pid', 10)
+            ctx = DaemonContext(working_directory='.', pidfile=pid)
+            ctx.open()
+
         start_agent(
             device=arguments['--device'],
             config_path=arguments['--config'],
+            user_path=arguments['--user_path'],
             debug=arguments['--debug'] or arguments['--full-debug'],
             pyagentx_debug=arguments['--full-debug'])
