@@ -1,1 +1,4 @@
-../../requirements.txt
+docopt
+git+https://github.com/rayed/pyagentx.git
+git+https://github.com/11craft/louie.git
+python-daemon
