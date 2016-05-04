@@ -20,16 +20,13 @@ Options:
 """
 from louie import dispatcher
 import pyagentx
-import subprocess
 import os
 import time
-import datetime
 from docopt import docopt
 import logging
 import traceback
 from openzwave.network import ZWaveNetwork
 from openzwave.option import ZWaveOption
-from pprint import pprint
 import re
 
 
@@ -45,9 +42,6 @@ logger.addHandler(ch)
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
-
-rev = subprocess.check_output(['git', 'show', '-s', '--format=%ci', 'HEAD'], cwd=ROOT)[:10].decode('utf-8')
-d = datetime.datetime.strptime(rev, '%Y-%m-%d') - datetime.datetime(2015, 8, 1)
 
 
 def get_oid(oid):
