@@ -3,9 +3,14 @@ services:
     agent:
         image: zeye/agent
         container_name: zeye-agent
-        command: python agent.py -d run
+        command: python /agent.py run -d \
+            --device=/dev/ttyAMA0 \
+            --config=/python-openzwave/openzwave/config \
+            --user_path=/data
         volumes:
-            - ./agent.py:/agent.py:ro
+            - ./data:/data
+            - ./agent.py:/agent.py
+        devices:
+            - "/dev/ttyAMA0:/dev/ttyAMA0"
         stop_signal: SIGINT
-        expose:
-            - '162/udp'
+        privileged: true
