@@ -9,4 +9,4 @@ RUN pip install \
     git+https://github.com/rayed/pyagentx.git \
     git+https://github.com/11craft/louie.git
 
-RUN apt-get remove -y --force-yes && apt-get autoremove -y --force-yes
+RUN apt-get remove -y --force-yes git && apt-get autoremove -y --force-yes

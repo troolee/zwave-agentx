@@ -3,10 +3,7 @@ services:
     agent:
         image: zeye/agent-rpi
         container_name: zeye-agent
-        command: python /agent.py run -d \
-            --device=/dev/ttyAMA0 \
-            --config=/usr/share/openzwave \
-            --user_path=/data
+        command: python /agent.py -d run --device=/dev/ttyAMA0 --config=/usr/share/openzwave --user_path=/data
         volumes:
             - ./data:/data
             - ./agent.py:/agent.py
