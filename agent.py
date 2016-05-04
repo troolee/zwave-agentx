@@ -33,8 +33,7 @@ from pprint import pprint
 import re
 
 
-VERSION = '0.2'
-BETA = True
+VERSION = '0.0.1'
 
 ROOT_OID = '1.3.6.1.4.1.47015'
 
@@ -49,9 +48,6 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 
 rev = subprocess.check_output(['git', 'show', '-s', '--format=%ci', 'HEAD'], cwd=ROOT)[:10].decode('utf-8')
 d = datetime.datetime.strptime(rev, '%Y-%m-%d') - datetime.datetime(2015, 8, 1)
-VERSION = '.'.join(VERSION.split('.') + [str(d.days)])
-if BETA:
-    VERSION += ' beta'
 
 
 def get_oid(oid):
