@@ -4,7 +4,7 @@ MAINTAINER Pavel Reznikov <pashka.reznikov@gmail.com>
 RUN apt-get update && apt-get install -y  --force-yes \
     git
 
-RUN pip install --no-cache-dir \
+RUN pip install \
     docopt \
     git+https://github.com/rayed/pyagentx.git \
     git+https://github.com/11craft/louie.git
