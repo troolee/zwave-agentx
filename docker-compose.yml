@@ -1,11 +1,11 @@
 version: '2'
 services:
     agent:
-        image: zeye/agent
+        image: alidron/rpi-python-openzwave:master
         container_name: zeye-agent
         command: python /agent.py run -d \
             --device=/dev/ttyAMA0 \
-            --config=/python-openzwave/openzwave/config \
+            --config=/usr/share/openzwave \
             --user_path=/data
         volumes:
             - ./data:/data
