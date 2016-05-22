@@ -12,3 +12,4 @@ services:
             - "/dev/ttyAMA0:/dev/ttyAMA0"
         stop_signal: SIGINT
         privileged: true
+        restart: always
