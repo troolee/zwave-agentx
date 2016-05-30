@@ -83,8 +83,8 @@ class ZeyeZwaveNodesUpdater(pyagentx.Updater):
             return
 
         self.set_INTEGER('1.0', len(zwave_nodes))
-        for i in range(len(zwave_nodes)):
-            n = zwave_nodes[i]
+        for i in range(1, len(zwave_nodes) + 1):
+            n = zwave_nodes[i - 1]
             self.set_INTEGER(self._get_oid(i, 1), i)
             self.set_INTEGER(self._get_oid(i, 2), n['zwaveNodeId'])
             self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveNodeName'])
@@ -110,8 +110,8 @@ class ZeyeZwaveTemperatureSensorsUpdater(pyagentx.Updater):
                          key=lambda x: x['zwaveTemperatureSensorNodeId'] * 10 + x['_sensorIndex'])
 
         self.set_INTEGER('1.0', len(sensors))
-        for i in range(len(sensors)):
-            n = sensors[i]
+        for i in range(1, len(sensors) + 1):
+            n = sensors[i - 1]
             self.set_INTEGER(self._get_oid(i, 1), i)
             self.set_INTEGER(self._get_oid(i, 2), n['zwaveTemperatureSensorNodeId'])
             self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveTemperatureSensorId'])
@@ -134,8 +134,8 @@ class ZeyeZwaveUltravioletSensorsUpdater(pyagentx.Updater):
                          key=lambda x: x['zwaveUltravioletSensorNodeId'] * 10 + x['_sensorIndex'])
 
         self.set_INTEGER('1.0', len(sensors))
-        for i in range(len(sensors)):
-            n = sensors[i]
+        for i in range(1, len(sensors) + 1):
+            n = sensors[i - 1]
             self.set_INTEGER(self._get_oid(i, 1), i)
             self.set_INTEGER(self._get_oid(i, 2), n['zwaveUltravioletSensorNodeId'])
             self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveUltravioletSensorId'])
@@ -158,8 +158,8 @@ class ZeyeZwaveLuminanceSensorsUpdater(pyagentx.Updater):
                          key=lambda x: x['zwaveLuminanceSensorNodeId'] * 10 + x['_sensorIndex'])
 
         self.set_INTEGER('1.0', len(sensors))
-        for i in range(len(sensors)):
-            n = sensors[i]
+        for i in range(1, len(sensors) + 1):
+            n = sensors[i - 1]
             self.set_INTEGER(self._get_oid(i, 1), i)
             self.set_INTEGER(self._get_oid(i, 2), n['zwaveLuminanceSensorNodeId'])
             self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveLuminanceSensorId'])
@@ -182,8 +182,8 @@ class ZeyeZwaveHumiditySensorsUpdater(pyagentx.Updater):
                          key=lambda x: x['zwaveHumiditySensorNodeId'] * 10 + x['_sensorIndex'])
 
         self.set_INTEGER('1.0', len(sensors))
-        for i in range(len(sensors)):
-            n = sensors[i]
+        for i in range(1, len(sensors) + 1):
+            n = sensors[i - 1]
             self.set_INTEGER(self._get_oid(i, 1), i)
             self.set_INTEGER(self._get_oid(i, 2), n['zwaveHumiditySensorNodeId'])
             self.set_OCTETSTRING(self._get_oid(i, 3), n['zwaveHumiditySensorId'])
